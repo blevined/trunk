@@ -13,7 +13,6 @@
 
 
 
-# The function's output is a 
 keep_complete <- function(df){
   df[complete.cases(df),]
   }
