@@ -1,0 +1,116 @@
+---
+title: "R Tutorial for Sales Finance"  
+author: Ben Levine, *@[blevined](https://twitter.com/blevined)*  
+date: 2017-04-21  
+output: html_notebook
+---
+
+#Prologue: What are we doing, anyway?  
+1. Become familiar with the RStudio environment
+2. Objects in R
+3. Basic R functions
+
+##RStudio Familiarity
+RStudio is a visual environment to run R. Most people find it easier than coding into a standalone text editor and executing commands into the terminal. It has four quadrants.  
+
+
+![](http://yushan.mcmaster.ca/theobio/mmed/images/thumb/1/10/RStudioScreenshot.png/800px-RStudioScreenshot.png)  
+(Ignore the keyboard shortcuts for now, they're for Windows computers... *yuck!*)  
+
+
+* The *Source Editor* is where you will write your code.  
+* The *Console* is where you execute it.  
+* The *Workspace/Environment & History* tab allow you to toggle back and forth between what you currently have loaded (Workspace/Environment), and past commands you have run (History).
+* We will use the final quadrant primarily to view our plots and to access the Help pages when we get stuck.
+
+##R as a calculator
+We can use R as a basic calculator. Try entering  
+
+* `5 + 7`  
+
+* `(63/9) + 3*4`  
+
+* `sum(1:7)*2`  
+_**Note:**_ the `:` sign effectively means "through." So, this command reads: "Sum all numbers 1 through 7 (inclusive), then multiply that sum by 2"   
+
+    
+You can also assign a value to a variable. For example:  
+
+* `x = 7`  
+_**Note:**_ Look in the Environment tab...   
+
+  
+You can now use `x` in place of any of the 7's in the above calculations. Do it! Be carefull though, *R is case sensitive.* You're doing great!
+
+##Objects in R 
+
+There are many different classes of objects in R. The few that we will go to are the most common in our work, but this list is by no means exhaustive. 
+
+####1. Vectors
+Think of a vector as a column. It is an ordered sequence of homogenous data elements, that is, a column of data of the *same basic class*.  
+
+> *What are the different data classes?*  
+
+Glad you asked!  
+
+* **Logical:** binary, either `TRUE` or `FALSE`.  
+* **Numeric:** this is a number. Also known as a "double" (often shown as `dbl`). There are differences between a "double" and "numeric," but they are pedantic and unimportant.  
+* **Integer:** this is a whole number. We won't use these much.  
+* **String:** this is one or more character, encapsulated by quotation marks. For example `"Hello world"` is a string. So is `"4"` - but only if you put it in quotes!  
+* **Factors:** 
+* **Dates:** This is a special case. Dates aren't a "base R" object class, but is a class that can be created with the `lubridate` package. Don't worry - we'll get to them later!  
+* **Special Cases, to Infinity & Beyond:** R cannot hold a value blank, in the same way Excel can. Instead, it stores that "blank" value as `NA` or `NaN`, a null value. This will be helpful in the future. R can handle infinity, whereas Excel cannot. The notation for an infinite value is `Inf`, or `-Inf` if it is negative.  
+
+> *But how can I tell what type of data class something is?*   
+
+Glad you asked! R has a very useful function called `typeof()`. 
+
+> *What's a function?*  
+
+To use the lingo, we call functions and give them arguments. They return an output. More on this later - we can actually define our own functions, but later on. [This](https://nicercode.github.io/guides/functions/) is nice as an intro, if you're interested. 
+
+####2. Data Frames
+####3. Lists
+```{r}
+
+library(lubridate)
+
+```
+
+
+### Creating a pivot table in R!
+
+```{r}
+setwd("/Users/blevine/Downloads")
+
+rev_rdw = vertRevRDWc()
+
+rev_a = paste("SELECT
+year_quarter_numeric,
+promoted_product,
+temporary_sub_territory,
+sum(served_usd_fixed_fx_micro/1e6)
+from rdw_salesfinance.vw_sfdata_etl_radar_data
+where chargeable_y_n = 'Y'
+and spam_y_n = 'N'
+and year in (2014,2015,2016,2017)
+and year_quarter_numeric < 20172
+and promoted_product in ('Mobile App', 'TAP - MAP')
+group by 1,2,3
+order by 1,2;
+");
+
+rev_bb = dbGetQuery(rev_rdw, rev_a);
+
+rev_bb = rev_bb %>% group_by(xx,yr) %>% summarize(youwant = sum(tobesummed));
+
+bb_pivot = dcast(rev_bb, xx ~ yr, value.var = "youwant") ;
+bb_pivot = bb_pivot %>% filter(xx != "Check")
+
+head(bb_pivot)
+
+
+write.csv(bb_pivot, "rev_xx_yr.csv")
+
+```
+
