@@ -1,8 +1,11 @@
 ---
-title: "R Tutorial for Sales Finance"  
-author: Ben Levine, *@[blevined](https://twitter.com/blevined)*  
-date: 2017-04-21  
-output: html_notebook
+title: "R Tutorial for Columbia Postgrads"
+author: "Ben Levine, *@[blevined](https://twitter.com/blevined)*"
+date: '2017-09-10'
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document: default
 ---
 
 #Prologue: What are we doing, anyway?  
@@ -11,7 +14,7 @@ output: html_notebook
 3. Basic R functions
 
 ##RStudio Familiarity
-RStudio is a visual environment to run R. Most people find it easier than coding into a standalone text editor and executing commands into the terminal. It has four quadrants.  
+RStudio is a visual environment to run R. Most people find it easier than coding into a standalone text editor and executing commands into the terminal. [Here's a cheatsheet, which is helpful for keyboard shortcuts](https://www.rstudio.com/wp-content/uploads/2015/01/rstudio-ide-cheatsheet-800x618.png) It has four quadrants.  
 
 
 ![](http://yushan.mcmaster.ca/theobio/mmed/images/thumb/1/10/RStudioScreenshot.png/800px-RStudioScreenshot.png)  
@@ -21,7 +24,8 @@ RStudio is a visual environment to run R. Most people find it easier than coding
 * The *Source Editor* is where you will write your code.  
 * The *Console* is where you execute it.  
 * The *Workspace/Environment & History* tab allow you to toggle back and forth between what you currently have loaded (Workspace/Environment), and past commands you have run (History).
-* We will use the final quadrant primarily to view our plots and to access the Help pages when we get stuck.
+* We will use the final quadrant primarily to view our plots and to access the Help pages when we get stuck.  
+_**Note:**_ If you ever want to pull up the documentation for a specific function, you can run `?curiousfunction` in the Console and it will pull up the help page in this final quadrant.
 
 ##R as a calculator
 We can use R as a basic calculator. Try entering  
@@ -53,11 +57,12 @@ Think of a vector as a column. It is an ordered sequence of homogenous data elem
 
 Glad you asked!  
 
-* **Logical:** binary, either `TRUE` or `FALSE`.  
+* **Logical:** binary, either `TRUE` or `FALSE`.
 * **Numeric:** this is a number. Also known as a "double" (often shown as `dbl`). There are differences between a "double" and "numeric," but they are pedantic and unimportant.  
 * **Integer:** this is a whole number. We won't use these much.  
 * **String:** this is one or more character, encapsulated by quotation marks. For example `"Hello world"` is a string. So is `"4"` - but only if you put it in quotes!  
-* **Factors:** 
+* **Factors:** Factors are variables in R which take on a limited number of different values; such variables are often refered to as categorical variables. One of the most important uses of factors is in statistical modeling; since categorical variables enter into statistical models differently than continuous variables, storing data as factors insures that the modeling functions will treat such data correctly.
+Factors in R are stored as a vector of integer values with a corresponding set of character values to use when the factor is displayed. 
 * **Dates:** This is a special case. Dates aren't a "base R" object class, but is a class that can be created with the `lubridate` package. Don't worry - we'll get to them later!  
 * **Special Cases, to Infinity & Beyond:** R cannot hold a value blank, in the same way Excel can. Instead, it stores that "blank" value as `NA` or `NaN`, a null value. This will be helpful in the future. R can handle infinity, whereas Excel cannot. The notation for an infinite value is `Inf`, or `-Inf` if it is negative.  
 
@@ -67,50 +72,164 @@ Glad you asked! R has a very useful function called `typeof()`.
 
 > *What's a function?*  
 
-To use the lingo, we call functions and give them arguments. They return an output. More on this later - we can actually define our own functions, but later on. [This](https://nicercode.github.io/guides/functions/) is nice as an intro, if you're interested. 
+To use the lingo, we call functions and give them arguments. They return an output.
+For example, `sum(1,2,3,4,5)` is a function that takes numeric **arguments** and whose output **returns** a numeric as well, equal to the sum of all the arguments. Simple, right? 
+More on this later - we can actually define our own functions, but later on. [This](https://nicercode.github.io/guides/functions/) is nice as an intro, if you're interested. Often, the functions we need to complete a certain task are not new, and other people have written functions to do them. Many folks are nice enough to bundle their written functions into packages that we can download from the internet; we do so by running `install.packages("packagename")`, which stores the package in a refrenceable library. In order to be able to reference the functions contained in the packages, we must load it into our current R session by using `library(packagename)`, and - violà - we can now use their functions. We should have already done this with the "tidyverse" (which is actually a package of packages, but I digress), but if not, do it now. 
 
-####2. Data Frames
-####3. Lists
+####2. Lists
+Lists are great for when you get further into your R journey. Lists are the data structure R uses for complex, hierarchical objects. We can create them by calling the `list()` function. You’re already familiar with vectors, R’s data structure for 1d objects. Lists extend these ideas to model objects that are like trees. You can create a list of data frames, and apply the same function to all of them independently. You can create a hierarchical structure with a list because unlike vectors, a list can contain other lists. For those interested, read more about their power and how to work with them [here](http://r4ds.had.co.nz/lists.html).
+
+####3. Data Frames
+R’s base data structures can be organised by their dimensionality (1d, 2d, or nd) and whether they’re homogeneous (all contents must be of the same type) or heterogeneous (the contents can be of different types).
+
+Both a matrix and a data frame are 2 dimensional data structure. While a matrix is homogeneous, data frame is not.
+
+##### Aside: Vectors & Matrices
+Both matrices and data frames are composed of row and column vectors. We can create vectors by **c**ombining values. We do so as follows:
+```{r}
+c(1,10,100)
+
+#and assign it to a variable to reference later
+a = c(1,10,100)
+
+#let's make a second one, just for fun!
+b = c(3,15,12)
+
+#and a third (we'll be making a square matrix later)
+x = c(2,1,10)
+
+```
+In fact we can perform scalar multiplication on this three-element vector. Try running `3*a`. Great!  
+
+Given that matrices are ordered vectors, we can also create a matrix by **binding** the vectors together. We can choose to bind by row or column (vectors in R aren't stored as columnar or row vectors unlesss explicitly specified). We can do so by using `rbind()` or `cbind()`, depending on if we want to bind by **r**ow or **c**olumn. Let's create a matrix where we specify that the vectors `a`,`b`,`x` are our column vectors, and call it `j`. I don't want to get too into matrices in R, but you have access to a Word doc where I outline some useful functions for class.  
+  
+Matrices are great but more frequently when doing data analysis we use data frames. How can we see what type of data is stored in our `j` matrix? That's right - `typeof()` - and it should return `double` or `numeric`, as that's what we're working with! But what if I want to know what class of object `j` is - i.e. how can I tell if I'm really working with a matrix? We can test for class by using `class()`. Go ahead and try it now!  
+
+
+Let's say I want to extract certain elements of our dear friend, the `j` matrix (this will work for data frames, too). Or, I wanted to apply some function to only a certain element -- I'd have to reference that element specifically. We do this by first referencing `j`, followed by these brackets `[]`, within which we can pinpoint exactly what row and column we want, separated by a comma. For example, if I want the element in the second row and first column of the matrix, I would reference it by running `j[2,1]`. Similarly, if I wanted just the third column, I'd reference it like this: `j[,3]`. Now, let's define `k` as a vector equal to the first row of `j` multiplied by 3.
+
+```{r}
+j = cbind(a,b,x)
+
+k = j[1,]*3
+
+```
+Nice! Let's check to make sure they are truly equal. We can check if a statement is true or false using the boolean operators `==`, `!=`, `>`, `<`, `>=`, `%in%`, and can string them together with `|` and `&` (or, and). Remember our vector `x`? Call it now just to inspect the elements again. Test if **each** element in the vector is equal to 1 by typing `x == 1`. It will return a vector of logical values, having made element-wise evaluations of our test. Test if 1 is contained in the entire vector by running `1 %in% x`, and it will turn a single logical value. This gets us to the root of programming; logical tests and the rules conditional on those. The simplest of this is the `ifelse()` function, which takes the following form:
+
 ```{r}
 
-library(lubridate)
+ifelse(1>20, "ben is smart", "he's really not that smart")
+
+#But what if we wanted to loop through a vector and apply that test to each element?
+
+k
+
+ifelse(k>20,"ben is smart", "he's really not that smart")
+
+```
+We can also 'nest' these `ifelse()` statements, so that we can apply multiple tests in the same line!
+
+![](https://i0.wp.com/dataaspirant.com/wp-content/uploads/2017/01/B03905_05_01-compressor.png?resize=690%2C381)  
+
+Ok - back to data frames. We can coerce our `j` matrix to a data frame by running `data.frame(j)`; let's store it as `df`. Let's create a new column, equal to my friend's names: "James", "Sharkey", "Rebecca." How would we do that?
+
+```{r}
+df = data.frame(j)
+names = c("James","Sharkey", "Rebecca")
+df = cbind(df,names)
+
+#alternative
+df = data.frame(j)
+df[,4] = c("James","Sharkey", "Rebecca")
+
+
+```
+But that's syntactically a little complicated, and what if your data was arranged in a different order? We would be assigning the names to data that they don't correspond to. It's often helpful to create variables as functions of other variables. So, let's do this a little more clearly, using the tidyverse.
+
+Let's work with real data! I emailed you all a dataset of Portugese wines.
+
+###Loading Data into R
+R can load all sorts of data (.sas, .dta, .xls, .xlsx, .csv, .sav). In general, I find it preferable to use .csv files (**C**omma-**S**eparated **V**alues) because they are easily read by all major statistical analysis software, and they are a memory-friendly way of storing data. You can open the CSV I sent you by referencing the filepath:
+
+```{r}
+vino = read.csv("/Users/blevine22/Downloads/wines.csv")
+```
+Let's explore the dataset. To view it the way one would in Excel, run: `View(vino)`. Great! But often this is cumbersome and slow, especially as you work with larger and larger datasets. It's usually faster to call `head()` on the data frame you are working with, as it prints directly to the console so you don't interrupt your workflow, and only shows you the first six rows of data. But, even this is also missing some information - namely, what kind of entry each is - we call this the **structure** of the dataset. to get the structure of the data frame, run `str()` on 'vino.' It looks like we're going to have to clean up some things - namely, there's an extra variable called 'X' that doesn't hold any information other than the row numbers, and our coding for red vs. white wine is a Factor variable, and we want to store it as a character, or 'string', variable. Time to get wranglin'. [This is helpful as a reference](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf) (I use it ALL the time). Important functions we'll be using:
+* `select()`
+* `filter()`
+* `mutate()`
+* `summarize()`  
+And we can chain them togther using this ` %>% `, which is called a pipe. The pipe places the output of the preceding action into the first argument of the next function. I like thinking about it/reading it as "then." In data frames, we can also reference columns by name by using `$`, this takes the form `data_frame_name$column_name`
+```{r}
+library(tidyverse)
+
+vino$type = as.character(vino$type)
+
+#now check to make sure it did what you wanted it to do
+str(vino)
+
+#Now, let's keep all columns except that meaningless 'X' vector
+cleaned = vino %>% select(fixed.acidity:type)
+
+#this is equivalent to
+cleaned2 = vino %>% select(-X)
+
+#and we can check
+head(cleaned == cleaned2)
+
+```
+But let's say we want a list of wines that contain a higher-than-the-median amount of the alcohol content of their peer group (red/white). We can make calculations by group!
+
+```{r}
+cleaned = cleaned %>% group_by(type) %>% mutate(medalc = median(alcohol)) %>% ungroup()
+
+#now let's filter out the observations that don't meet our criteria!
+boozy = cleaned %>% filter(alcohol >= medalc)
+
+#this creates very readable code, and we can do everything we just did in ONE LINE!!
+boozy = vino %>% select(-X) %>% group_by(type) %>% mutate(medalc = median(alcohol)) %>% ungroup() %>% filter(alcohol >= medalc)
+
+```
+Even though this commands are simple, they are powerful. Let's calculate the median alcohol content by rating (scale is 1 to 10)
+
+
+```{r}
+boozy = boozy %>% group_by(quality) %>% mutate(typealcohol = median(alcohol)) %>% ungroup()
+```
+This is okay except now we have three different levels of the granularity of information that we're addressing. First is observation level data, which is every column except the two that we've calculated: the median alcohol content by wine color, and the median alcohol content by quality rating. This is a little confusing. Back to vino!
+
+```{r}
+
+facts_by_rating = vino %>%  group_by(quality) %>% summarize(abv = mean(alcohol), sulph = mean(sulphates), fruits = mean(citric.acid), sugars = mean(residual.sugar))
+
+#To make it easier to read, I often indent like this:
+facts_by_rating = vino %>%  group_by(quality) %>% summarize(abv = mean(alcohol),
+                                                            sulph = mean(sulphates),
+                                                            fruits = mean(citric.acid),
+                                                            sugars = mean(residual.sugar))
+```
+
+
+We can plot this data if we want, too. [Here's the corresponding cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf)
+```{r}
+#first we set the x and y axis for the plot area
+ggplot(facts_by_rating, aes(x = quality, y = abv)) 
+
+
+#then we can add in how we want to visualize our data -- I chose 
+ggplot(facts_by_rating, aes(x = quality, y = abv))  + geom_point()
+
+
+#advanced!
+ggplot(facts_by_rating,aes(x = quality, y = fruits, fill = log(abv))) + geom_bar(stat = "identity")
+
 
 ```
 
 
-### Creating a pivot table in R!
+###Writing/Saving Data
+The same way we can read data into R, we can write it out into a number of different formats. We'll just write it out to a csv here:
 
 ```{r}
-setwd("/Users/blevine/Downloads")
-
-rev_rdw = vertRevRDWc()
-
-rev_a = paste("SELECT
-year_quarter_numeric,
-promoted_product,
-temporary_sub_territory,
-sum(served_usd_fixed_fx_micro/1e6)
-from rdw_salesfinance.vw_sfdata_etl_radar_data
-where chargeable_y_n = 'Y'
-and spam_y_n = 'N'
-and year in (2014,2015,2016,2017)
-and year_quarter_numeric < 20172
-and promoted_product in ('Mobile App', 'TAP - MAP')
-group by 1,2,3
-order by 1,2;
-");
-
-rev_bb = dbGetQuery(rev_rdw, rev_a);
-
-rev_bb = rev_bb %>% group_by(xx,yr) %>% summarize(youwant = sum(tobesummed));
-
-bb_pivot = dcast(rev_bb, xx ~ yr, value.var = "youwant") ;
-bb_pivot = bb_pivot %>% filter(xx != "Check")
-
-head(bb_pivot)
-
-
-write.csv(bb_pivot, "rev_xx_yr.csv")
-
+write.csv(facts_by_rating, "/Users/blevine22/Downloads/myfilename.csv")
 ```
-
