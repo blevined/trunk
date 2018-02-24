@@ -111,6 +111,14 @@ ty = rbind(as.data.frame(unclass(fit$scores)),
 
 library(ggplot2) #library for creating visualizations
 
+
+install.packages("ggplot2");
+install.packages("ggrepel");
+library(ggplot2);
+library(ggrepel);
+
+
+
 #PCA plot!
 
 
